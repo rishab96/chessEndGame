@@ -1,0 +1,39 @@
+﻿[Event "?"]
+[Site "?"]
+[Date "2015.10.22"]
+[Round "?"]
+[White "1"]
+[Black "?"]
+[Result "*"]
+[SetUp "1"]
+[FEN "8/8/2k5/8/4R3/8/8/4K3 w - - 0 0"]
+[PlyCount "0"]
+
+ *
+
+[Event "?"]
+[Site "?"]
+[Date "2015.10.22"]
+[Round "?"]
+[White "2"]
+[Black "?"]
+[Result "*"]
+[SetUp "1"]
+[FEN "8/8/2k5/8/8/8/6R1/4K3 w - - 0 1"]
+[PlyCount "0"]
+
+ *
+
+[Event "?"]
+[Site "?"]
+[Date "2015.10.22"]
+[Round "?"]
+[White "3"]
+[Black "?"]
+[Result "*"]
+[SetUp "1"]
+[FEN "8/8/2k5/8/8/3Q4/8/4K3 w - - 0 1"]
+[PlyCount "0"]
+
+ *
+
