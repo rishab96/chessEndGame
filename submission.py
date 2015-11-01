@@ -44,7 +44,7 @@ def extractWordFeatures(x):
     features.update(ishPawn(x))
 
 
-    print x
+    # print x
 #    print canCatchPawn(x)
 #    print isWhiteKingAhead(x)
 #    print isOpposition(x)
@@ -52,7 +52,7 @@ def extractWordFeatures(x):
 #    print wrongSide(x)
 #    print canBeCaptured(x) 
     
-    print features
+    return features
 
     # y = x.pieces(chess.KING, chess.BLACK)
     # for a in y:
@@ -80,11 +80,12 @@ def learnPredictor(trainExamples, testExamples, featureExtractor):
     '''
     weights = {}  # feature => weight
     weights = defaultdict(lambda: 0, weights)
+   
     
     # BEGIN_YOUR_CODE (around 15 lines of code expected)
     numIters = 1;
     curIters = 0;
-    n = 0.08
+    n = 1.0
 
     syzygy = chess.syzygy.Tablebases()
     num = 0
@@ -95,68 +96,103 @@ def learnPredictor(trainExamples, testExamples, featureExtractor):
         
  #       OPP = '2k5/8/2K5/8/8/8/5P2/8'
 
- #       board = chess.Board(OPP + " " + "w" + " - - 0 1")
- #       expectVal = syzygy.probe_wdl(board)
- #       if pos <= 10000:
- #       features = featureExtractor(board)
-
         for t in trainExamples:
 
             dotProd = 0
-            #loading syzgy
             
             board = chess.Board(t + " " + "w" + " - - 0 1")
             expectVal = syzygy.probe_wdl(board)
-            if pos <= 10000:
-                features = featureExtractor(board)
-                pos = pos + 1
-            else:
-                break
-            # for val in features:
-            #     dotProd += weights[val] * features[val]
 
-            # if (1 - dotProd * t[1]) >= 0:
-            #     for val in features:
-            #         weights[val] = weights[val] +  n * features[val] * expectedVal
+            if (expectVal is None):
+                continue
+            elif (expectVal > 0):
+                expectVal = 1
+            elif (expectVal < 0):
+                expectedVal = -1
+            # elif (expectVal is None):
+            #     print "continue"
+            #     continue
+            # if pos <= 10000:
+            #     features = featureExtractor(board)
+            #     pos = pos + 1
+            # else:
+            #     break
+            pos = pos + 1
 
-            # curIters = curIters + 1
+            if pos%10000 == 0:
+                print pos
+               # break
+            
+
+            features = featureExtractor(board)
+            # print features
+            # print weights
+            # print expectVal
+            # print " "
+
+
+            for val in features:
+                dotProd += weights[val] * features[val]
+            #print dotProd
+
+            if (1 - dotProd * expectVal) >= 0:
+                for val in features:
+                    weights[val] = weights[val] +  n * features[val] * expectVal
+
+            curIters = curIters + 1
+        print i
+        print weights
     
     # END_YOUR_CODE
+    print weights
     return weights
 
 ############################################################
 # Problem 3c: generate test case
 
-def generateDataset(numExamples, weights):
-    '''
-    Return a set of examples (phi(x), y) randomly which are classified correctly by
-    |weights|.
-    '''
-    random.seed(42)
-    # Return a single example (phi(x), y).
-    # phi(x) should be a dict whose keys are a subset of the keys in weights
-    # and values can be anything (randomize!) with a nonzero score under the given weight vector.
-    # y should be 1 or -1 as classified by the weight vector.
-    def generateExample():
-        # BEGIN_YOUR_CODE (around 2 lines of code expected)
-        phi = {}
-        for x in weights:
-            if random.randint(1,2) == 1:
-                phi[x] = random.randint(1,100)
+def test(examples):
+    weights = {'black_opposition': 0.0, 'white_king_wrong_side': 1.0, 'can catch pawn': 1.0, 'white king ahead': 1.0, 'white_king_closer_to_winning_square': 1.0, 'white_king_ahead': 0, 'black_can_capture': 0.0, 'black_king_closer_closer_to_winning_square': 1.0, 'white_king_behind': 0.0, 'white_king_closer': 1.0, 'black_king_wrong_side': 0.0, 'white_king_blocked': 1.0, 'cant catch pawn': 1.0, 'black_king_closer': 1.0, 'h_pawn': 0.0}
+    syzygy = chess.syzygy.Tablebases()
+    num = 0
+    num += syzygy.open_directory(os.path.join(os.path.dirname(__file__), "four-men"))   
 
-        totalSum = 0
-        
-        for i in range(len(phi.keys())):
-            totalSum += weights[phi.keys()[i]] * phi[phi.keys()[i]]
-            
-        y = 0  
-        if totalSum < 0:
-            y = -1
-        else:
-            y = 1
-        print (phi,y)
-        
-        # END_YOUR_CODE
-        return (phi, y)
-    return [generateExample() for _ in range(numExamples)]
+    total = 0
+    correct = 0
 
+    for t in examples:
+        board = chess.Board(t + " " + "w" + " - - 0 1")
+        expectVal = syzygy.probe_wdl(board)
+        features = extractWordFeatures(board)
+
+        if (expectVal is None):
+                continue
+        elif (expectVal > 0):
+            expectVal = 1
+        elif (expectVal < 0):
+            expectedVal = -1
+
+        ourVal = 0
+
+        for val in features:
+            ourVal += weights[val] * features[val]
+
+        if (ourVal > 0.5):
+            ourVal = 1
+        elif (ourVal < -0.5):
+            ourVal = -1
+        else :
+            ourVal = 0
+
+        if ourVal == expectVal:
+            correct = correct + 1
+    
+        total = total + 1
+        
+        if (total %1000 == 0):
+            print correct
+            print total
+            print " "
+        #     print total
+
+    print correct
+    print total

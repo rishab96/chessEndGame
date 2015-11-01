@@ -8,9 +8,10 @@ from util import *
 import submission
 from submission import *
 
-def test():
+def train():
     trainExamples = readExamples('data.txt')
     submission.learnPredictor(trainExamples, trainExamples, extractWordFeatures)
+    #submission.test(trainExamples)
     # devExamples = readExamples('polarity.dev')
     # featureExtractor = submission.extractWordFeatures
     # weights = submission.learnPredictor(trainExamples, devExamples, featureExtractor)
@@ -21,4 +22,8 @@ def test():
     # print "Official: train error = %s, dev error = %s" % (trainError, devError)
     # grader.requireIsLessThan(0.08, trainError)
     # grader.requireIsLessThan(0.30, devError)
+def test():
+    trainExamples = readExamples('data.txt')
+    submission.test(trainExamples)
+    
 test()
