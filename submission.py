@@ -33,8 +33,27 @@ def extractWordFeatures(x):
     Chess Features
     """
     # BEGIN_YOUR_CODE (around 5 lines of code expected)
+    
+    features = {}
+    features.update(canCatchPawn(x))
+    features.update(isWhiteKingAhead(x))
+    features.update(isOpposition(x))
+    features.update(move_distances(x))
+    features.update(wrongSide(x))
+    features.update(canBeCaptured(x))
+    features.update(ishPawn(x))
+
+
     print x
-    print canCatchPawn2(x)
+#    print canCatchPawn(x)
+#    print isWhiteKingAhead(x)
+#    print isOpposition(x)
+#    print move_distances(x)
+#    print wrongSide(x)
+#    print canBeCaptured(x) 
+    
+    print features
+
     # y = x.pieces(chess.KING, chess.BLACK)
     # for a in y:
     #     print a
@@ -73,19 +92,26 @@ def learnPredictor(trainExamples, testExamples, featureExtractor):
 
     pos = 0
     for i in range (0,numIters):
+        
+ #       OPP = '2k5/8/2K5/8/8/8/5P2/8'
+
+ #       board = chess.Board(OPP + " " + "w" + " - - 0 1")
+ #       expectVal = syzygy.probe_wdl(board)
+ #       if pos <= 10000:
+ #       features = featureExtractor(board)
 
         for t in trainExamples:
 
-            
             dotProd = 0
             #loading syzgy
             
             board = chess.Board(t + " " + "w" + " - - 0 1")
             expectVal = syzygy.probe_wdl(board)
-            if pos <= 100:
+            if pos <= 10000:
                 features = featureExtractor(board)
                 pos = pos + 1
-
+            else:
+                break
             # for val in features:
             #     dotProd += weights[val] * features[val]
 

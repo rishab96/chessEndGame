@@ -1,6 +1,11 @@
 import os, random, operator, sys
 from collections import Counter
 
+def manhattanDistance( xy1, xy2 ):
+  "Returns the Manhattan distance between points xy1 and xy2"
+  return abs( xy1[0] - xy2[0] ) + abs( xy1[1] - xy2[1] )
+
+
 def dotProduct(d1, d2):
     """
     @param dict d1: a feature vector represented by a mapping from a feature (string) to a weight (float).

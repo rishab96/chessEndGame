@@ -3,18 +3,15 @@
 import numpy as np
 import chess
 
+
 # board is a 2d grid.
 #
 
-def findPiece(board, piece):
-    
-    for row, i in enumerate(board):
-        try:
-            column = i.index(piece)
-        except ValueError:
-            continue
-        return row, column
-    return -1
+# useful method.
+
+def manhattanDistance( xy1, xy2 ):
+  "Returns the Manhattan distance between points xy1 and xy2"
+  return abs( xy1[0] - xy2[0] ) + abs( xy1[1] - xy2[1] )
 
 
 
@@ -35,14 +32,279 @@ def getPiece(board, piece, color):
         results.append(x)
     return results
 
+def getPieceCoOrd(board, piece, color):
 
-def canCatchPawn2(board):
+    res = getPiece(board, piece, color) 
+         
+    if len(res) != 0:
+        num = res[0]
+    else:
+        return None
+   
+    row_k, col_k = getRowAndColumn(num)
+    
+    return row_k, col_k
+
+# NEED TO CONSIDER THE EDGE CASE WHEN THE KING IS TOO FAR AHEAD,
+# AND BLACK KING CAN MAYBE CATCH THE PAWN?
+
+
+#### Features below:
+
+# Might test by increasing the feature value for black can capture/
+def canBeCaptured(board):
+    
+    # We know it's only one so far, so don't have to do anymore.
+    A = {}
+    P = getPiece(board,chess.PAWN, chess.WHITE)[0]
+    black_attack = board.is_attacked_by(chess.BLACK, P)
+    white_attack = board.is_attacked_by(chess.WHITE, P) 
+
+    if black_attack and not white_attack:
+        A['black_can_capture'] = 1
+
+    return A
+
+def isWhiteKingAhead(board):
+   
+    A = {}
+    row_K, col_K = getPieceCoOrd(board, chess.KING, chess.WHITE)
+             
+    row_p, col_p = getPieceCoOrd(board, chess.PAWN, chess.WHITE)
+    
+    if row_K > row_p:
+        if abs(col_K - col_p) <= 1:
+            A['white king ahead'] = 1
+    
+    return A
+
+def ishPawn(board):
+    
+    A = {}
+    row_p, col_p = getPieceCoOrd(board, chess.PAWN, chess.WHITE)
+    if col_p == 7 or col_p == 0:
+        A['h_pawn'] = 1
+
+    return A
+
+# needs to return who has the opposition as well.
+# tupe - (true, BLACK)
+
+def isOpposition(board):
+    
+    A = {}
+    move = board.turn == chess.WHITE
+        
+    row_K, col_K = getPieceCoOrd(board, chess.KING, chess.WHITE)
+             
+    row_k, col_k = getPieceCoOrd(board, chess.KING, chess.BLACK)
+
+    if col_K == col_k:
+        if row_K == row_k - 2:
+            if move:
+                A['black_opposition'] = 1
+            else:
+                A['white_opposition'] = 1
+
+    return A
+
+## Need to decide whether we should keep minimum column 
+# distance = 2 or not.
+
+def wrongSide(board):
+    
+    A = {}
+
+    K = getPieceCoOrd(board, chess.KING, chess.WHITE)         
+    k = getPieceCoOrd(board, chess.KING, chess.BLACK) 
+    P = getPieceCoOrd(board, chess.PAWN, chess.WHITE)
+    
+    if K[1] > P[1] and k[1] > P[1]:
+        
+        # K[1] < k[1] means white king is closer.
+
+        if K[1] < k[1]:
+            
+            A['black_king_wrong_side'] = 1
+
+        elif K[1] > k[1]:
+
+            A['white_king_wrong_side'] = 1
+            
+            if abs(K[0] - k[0]) <= 1:
+
+                A['white_king_blocked'] = 1
+
+    elif K[1] < P[1] and k[1] < P[1]:
+        
+        if K[1] < k[1]:
+
+            A['white_king_wrong_side'] = 1
+            
+            if abs(K[0] - k[0]) <= 1:
+
+                A['white_king_blocked'] = 1
+                
+        elif K[1] < k[1]:
+            
+            A['black_king_wrong_side'] = 1
+     
+    ## time to check the rows:
+    
+    if K[0] < P[0] and k[0] > P[0]:
+        A['white_king_behind'] = 1
+    elif K[0] > P[0] and k[0] < P[0]:
+        A['white_king_ahead'] = 1
+
+
+
+    return A
+
+## returns the dist k-P - K-P.
+# So if it's positive, then it's a good thing for us, 
+# while if it's negative, that's a bad thing.
+# Weights should figure that out hopefully.
+
+## Also, deal with pawn on 6th rank here.
+
+# helper function, closer to winning square:
+# Meh, make it later.
+
+def move_distances(board):
+    
+    A = {}
+
+    move = board.turn == chess.WHITE
+    
+    row_K, col_K = getPieceCoOrd(board, chess.KING, chess.WHITE)
+             
+    row_k, col_k = getPieceCoOrd(board, chess.KING, chess.BLACK)
+    
+    row_P, col_P =  getPieceCoOrd(board, chess.PAWN, chess.WHITE)
+    
+    # because the key square in this fight is the square right above the pawn.
+    # Do we really need to do error checking for this?!
+    row_P += 1
+
+
+    assert(row_P != None)
+
+    K1 = abs(row_K - row_P) 
+    K2 = abs(col_K - col_P)
+    K_d = max(K1, K2)
+
+    k1 = abs(row_k - row_P) 
+    k2 = abs(col_k - col_P)
+    k_d = max(k1, k2)
+    
+    if move:
+        K_d -= 1
+    else:
+        k_d -= 1
+
+    # less than equal to because if they both reach it at same time,
+    # I guess we should consider white king closer?!
+    
+    ## Maybe should give this greater value?
+
+    if K_d <= k_d:
+        
+        A['white_king_closer'] = 1
+
+        
+
+    else:
+
+        A['black_king_closer'] = 1
+    
+    # Winning squares right above:
+
+    col_P -= 1
+    
+    # so it's not an illegal square
+    if col_P < 8 or col_P >= 0:
+        
+        ## A lot of repeated shit here:
+
+        K1 = abs(row_K - row_P) 
+        K2 = abs(col_K - col_P)
+        K_d = max(K1, K2)
+
+        k1 = abs(row_k - row_P) 
+        k2 = abs(col_k - col_P)
+        k_d = max(k1, k2)
+        
+        if move:
+            K_d -= 1
+        else:
+            k_d -= 1
+
+        # less than equal to because if they both reach it at same time,
+        # I guess we should consider white king closer?!
+        
+        # Adding a return here, because then we don't even need to check the rest/.    
+        if K_d <= k_d:
+            
+            A['white_king_closer_to_winning_square'] = 1
+            return A
+
+        else:
+
+            A['black_king_closer_closer_to_winning_square'] = 1
+
+
+
+    # Winning square on the other side:
+
+    col_P += 2
+    
+    # SHould really DECOMPOSE THIS IF I WASN"T AN IDIOT>
+    # so it's not an illegal square
+
+    if col_P < 8 or col_P >= 0:
+        
+        ## A lot of repeated shit here:
+
+        K1 = abs(row_K - row_P) 
+        K2 = abs(col_K - col_P)
+        K_d = max(K1, K2)
+
+        k1 = abs(row_k - row_P) 
+        k2 = abs(col_k - col_P)
+        k_d = max(k1, k2)
+        
+        if move:
+            K_d -= 1
+        else:
+            k_d -= 1
+
+        # less than equal to because if they both reach it at same time,
+        # I guess we should consider white king closer?!
+
+        if K_d <= k_d:
+            
+            A['white_king_closer_to_winning_square'] = 1
+
+        else:
+
+            A['black_king_closer_closer_to_winning_square'] = 1
+    
+    return A
+    
+
+
+def canCatchPawn_helper(board):
     
     # getPieces, then find the co-ordinates
     # of those pieces.
-    move = True
+    #
+    
+    # move should be true or false;
+    move = board.turn == chess.WHITE
     res = getPiece(board, chess.KING, chess.BLACK) 
     
+
+
     if len(res) != 0:
         num = res[0]
 
@@ -76,7 +338,14 @@ def canCatchPawn2(board):
 
     return True
     
-
+def canCatchPawn(board):
+    A = {}
+    if canCatchPawn_helper(board):
+        A['can catch pawn'] = 1
+    else:
+        A['cant catch pawn'] = 1
+    
+    return A
 
 
 
