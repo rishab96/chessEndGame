@@ -79,11 +79,11 @@ def learnPredictor(trainExamples, testExamples, featureExtractor):
     numIters refers to a variable you need to declare. It is not passed in.
     '''
     weights = {}  # feature => weight
-    weights = defaultdict(lambda: 0, weights)
+    weights = defaultdict(lambda: 0.0, weights)
    
     
     # BEGIN_YOUR_CODE (around 15 lines of code expected)
-    numIters = 1;
+    numIters = 5;
     curIters = 0;
     n = 1.0
 
@@ -98,17 +98,17 @@ def learnPredictor(trainExamples, testExamples, featureExtractor):
 
         for t in trainExamples:
 
-            dotProd = 0
+            dotProd = 0.0
             
             board = chess.Board(t + " " + "w" + " - - 0 1")
             expectVal = syzygy.probe_wdl(board)
 
             if (expectVal is None):
                 continue
-            elif (expectVal > 0):
-                expectVal = 1
-            elif (expectVal < 0):
-                expectedVal = -1
+            elif (expectVal == 0):
+                expectVal = -1.0
+            else:
+                expectVal = 1.0
             # elif (expectVal is None):
             #     print "continue"
             #     continue
@@ -117,11 +117,11 @@ def learnPredictor(trainExamples, testExamples, featureExtractor):
             #     pos = pos + 1
             # else:
             #     break
-            pos = pos + 1
+            # pos = pos + 1
 
-            if pos%10000 == 0:
-                print pos
-               # break
+            # if pos%10000 == 0:
+            #     print pos
+               
             
 
             features = featureExtractor(board)
@@ -149,16 +149,21 @@ def learnPredictor(trainExamples, testExamples, featureExtractor):
 
 ############################################################
 # Problem 3c: generate test case
+#1 iter:
+#weights = {'black_opposition': 0.0, 'white_king_wrong_side': -1.0, 'can catch pawn': 0.0, 'white king ahead': 0.0, 'white_king_closer_to_winning_square': 0.0, 'white_king_ahead': 22.0, 'black_can_capture': 0.0, 'black_king_closer_closer_to_winning_square': 1.0, 'white_king_behind': 0.0, 'white_king_closer': 3.0, 'black_king_wrong_side': 0.0, 'white_king_blocked': 3.0, 'cant catch pawn': 6.0, 'black_king_closer': 3.0, 'h_pawn': 2.0}
 
+#4 iterations
+#{'black_opposition': 0.0, 'white_king_wrong_side': -1.0, 'can catch pawn': 0.0, 'white king ahead': -1.0, 'white_king_closer_to_winning_square': 0.0, 'white_king_ahead': 26.0, 'black_can_capture': 0.0, 'black_king_closer_closer_to_winning_square': 1.0, 'white_king_behind': 0.0, 'white_king_closer': 3.0, 'black_king_wrong_side': 0.0, 'white_king_blocked': 4.0, 'cant catch pawn': 6.0, 'black_king_closer': 3.0, 'h_pawn': 2.0}
 def test(examples):
-    weights = {'black_opposition': 0.0, 'white_king_wrong_side': 1.0, 'can catch pawn': 1.0, 'white king ahead': 1.0, 'white_king_closer_to_winning_square': 1.0, 'white_king_ahead': 0, 'black_can_capture': 0.0, 'black_king_closer_closer_to_winning_square': 1.0, 'white_king_behind': 0.0, 'white_king_closer': 1.0, 'black_king_wrong_side': 0.0, 'white_king_blocked': 1.0, 'cant catch pawn': 1.0, 'black_king_closer': 1.0, 'h_pawn': 0.0}
+    weights = {'black_opposition': 0.0, 'white_king_wrong_side': -1.0, 'can catch pawn': 0.0, 'white king ahead': -1.0, 'white_king_closer_to_winning_square': 0.0, 'white_king_ahead': 26.0, 'black_can_capture': 0.0, 'black_king_closer_closer_to_winning_square': 1.0, 'white_king_behind': 0.0, 'white_king_closer': 3.0, 'black_king_wrong_side': 0.0, 'white_king_blocked': 4.0, 'cant catch pawn': 6.0, 'black_king_closer': 3.0, 'h_pawn': 2.0}   
     syzygy = chess.syzygy.Tablebases()
+
     num = 0
     num += syzygy.open_directory(os.path.join(os.path.dirname(__file__), "four-men"))   
 
     total = 0
     correct = 0
-
+    incorrect = 0
     for t in examples:
         board = chess.Board(t + " " + "w" + " - - 0 1")
         expectVal = syzygy.probe_wdl(board)
@@ -166,28 +171,36 @@ def test(examples):
 
         if (expectVal is None):
                 continue
-        elif (expectVal > 0):
+        elif (expectVal == 0):
+            expectVal = -1
+        else:
             expectVal = 1
-        elif (expectVal < 0):
-            expectedVal = -1
+        
 
         ourVal = 0
 
         for val in features:
             ourVal += weights[val] * features[val]
 
-        if (ourVal > 0.5):
-            ourVal = 1
-        elif (ourVal < -0.5):
+        if (ourVal <= 0):
             ourVal = -1
-        else :
-            ourVal = 0
+        elif (ourVal > 0):
+            ourVal = 1
+
 
         if ourVal == expectVal:
             correct = correct + 1
+        else:
+            incorrect = incorrect + 1
+            print board
+            print expectVal
+            print ourVal
+            print " "
+            if incorrect == 100:
+                break
     
         total = total + 1
-        
+
         if (total %1000 == 0):
             print correct
             print total
