@@ -51,18 +51,90 @@ def getPieceCoOrd(board, piece, color):
 
 #### Features below:
 
+## checks if after changing n+1,n-1
+# etc, the new n should be somewhere
+# around the old n.
+# It could either go out of the board,
+# or on the corner column - both are bad.
+
+def outofRange(n):
+
+    if n > 63 or n < 0:
+        return True
+    
+    edge = n % 8
+    if edge == 7 or edge == 0:
+        return True
+
+    return False
+
+# will check if the white king can reach n or not.
+# white king will only be able to reach n if it is
+# attacking that, and the black king isn't.
+# Just for KPvsk endgames
+
+def canDefend(board, n):
+    
+    black_attack = board.is_attacked_by(chess.BLACK, n)
+    white_attack = board.is_attacked_by(chess.WHITE, n) 
+    
+    if white_attack and not black_attack:
+        return True
+    
+    return False
+
 # Might test by increasing the feature value for black can capture/
+def canBeCaptured_helper(board):
+    
+    # We know it's only one so far, so don't have to do anymore.
+    move = board.turn == chess.WHITE
+    
+    # P is the position number of the pawn.
+    P = getPiece(board,chess.PAWN, chess.WHITE)[0]
+    black_attack = board.is_attacked_by(chess.BLACK, P)
+    
+    # just to reduce cases we need to check
+    if not black_attack:
+        return False
+
+    white_attack = board.is_attacked_by(chess.WHITE, P) 
+    
+    if not move:
+        if black_attack and not white_attack:
+            return True
+
+    else:
+        # just make each case separately:
+        
+        # start from row above and then cover all three rows.
+        N = P + 8
+        for i in range(3):
+            
+            left = N - 1
+            mid = N # Don't have to check this because no case when this will be accessible and others wont be.
+            right = N + 1
+            
+            if not outofRange(left) and canDefend(board, left):
+                return False
+            
+            if not outofRange(right) and canDefend(board, right):
+                return False
+    
+            N -= 8
+
+        # I guess second condition is redundant because if it were
+        # true, then would have returned false already
+        if black_attack and not white_attack:
+            return True
+        
+
 def canBeCaptured(board):
     
     # We know it's only one so far, so don't have to do anymore.
     A = {}
-    P = getPiece(board,chess.PAWN, chess.WHITE)[0]
-    black_attack = board.is_attacked_by(chess.BLACK, P)
-    white_attack = board.is_attacked_by(chess.WHITE, P) 
-
-    if black_attack and not white_attack:
+    if canBeCaptured_helper(board):
         A['black_can_capture'] = 1
-
+    
     return A
 
 def isWhiteKingAhead(board):
@@ -151,10 +223,10 @@ def wrongSide(board):
      
     ## time to check the rows:
     
-    if K[0] < P[0] and k[0] > P[0]:
-        A['white_king_behind'] = 1
-    elif K[0] > P[0] and k[0] < P[0]:
-        A['white_king_ahead'] = 1
+#    if K[0] < P[0] and k[0] > P[0]:
+#        A['white_king_behind'] = 1
+#    elif K[0] > P[0] and k[0] < P[0]:
+#        A['white_king_ahead'] = 1
 
 
 
@@ -250,7 +322,7 @@ def move_distances(board):
 
         else:
 
-            A['black_king_closer_closer_to_winning_square'] = 1
+            A['black_king_closer_to_winning_square'] = 1
 
 
 
@@ -287,7 +359,7 @@ def move_distances(board):
 
         else:
 
-            A['black_king_closer_closer_to_winning_square'] = 1
+            A['black_king_closer_to_winning_square'] = 1
     
     return A
     

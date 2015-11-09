@@ -14,4 +14,10 @@ def test():
     trainExamples = readExamples('data.txt')
     submission.test(trainExamples)
 
-test()
+def isolationTest():
+    
+    submission.isolationTest(extractWordFeatures)
+
+isolationTest()
+#train()
+#test()
