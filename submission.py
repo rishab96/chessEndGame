@@ -25,7 +25,6 @@ def extractWordFeatures(x):
     """
     Chess Features
     """
-    # BEGIN_YOUR_CODE (around 5 lines of code expected)
     
     features = {}
     features = defaultdict(lambda: 0.0, features)
@@ -35,7 +34,8 @@ def extractWordFeatures(x):
         return features
 
     features.update(canBeCaptured(x))
-
+    # if (features['black_can_capture'] == 1):
+    #     return {'black_can_capture':1}
     features.update(isWhiteKingAhead(x))
     features.update(isOpposition(x))
     features.update(move_distances(x))
@@ -77,7 +77,7 @@ def isolationTest(features):
 ############################################################
 # Problem 3b: stochastic gradient descent
 
-def learnPredictor(trainExamples, testExamples, featureExtractor):
+def learnPredictor(trainExamples, testExamples, featureExtractor, color, syzygy):
     '''
     Given |trainExamples| and |testExamples| (each one is a list of (x,y)
     pairs), a |featureExtractor| to apply to x, and the number of iterations to
@@ -99,10 +99,6 @@ def learnPredictor(trainExamples, testExamples, featureExtractor):
     curIters = 0;
     n = 0.01
 
-    syzygy = chess.syzygy.Tablebases()
-    num = 0
-    num += syzygy.open_directory(os.path.join(os.path.dirname(__file__), "four-men"))
-
     pos = 0
 
     blackPos = 0
@@ -116,7 +112,7 @@ def learnPredictor(trainExamples, testExamples, featureExtractor):
 
             dotProd = 0.0
             
-            board = chess.Board(t + " " + "w" + " - - 0 1")
+            board = chess.Board(t + " " + color + " - - 0 1")
             expectVal = syzygy.probe_wdl(board)
 
             if (expectVal is None):
@@ -133,16 +129,16 @@ def learnPredictor(trainExamples, testExamples, featureExtractor):
 
             features = featureExtractor(board)
 
-            if(features['cant catch pawn'] == 1):
-                if (expectVal == 1):
+            if(features['black_can_capture'] == 1):
+                if (expectVal == -1):
                     blackPos = blackPos + 1
-                elif (expectVal == -1):
+                elif (expectVal == 1):
                     blackNeg = blackNeg + 1
-                    print board
-                    print isIllegal(t)
-                    print ""
-                if (blackNeg == 100):
-                    break
+                    # print board
+                    # print isIllegal(t)
+                    # print ""
+                # if (blackNeg == 100):
+                #     break
                 # print weights['black_can_capture']
                 # print expectVal
                 # print " "
@@ -164,27 +160,7 @@ def learnPredictor(trainExamples, testExamples, featureExtractor):
     print weights
     return weights
 
-############################################################
-# Problem 3c: generate test case
-#1 iter:
-#weights = {'black_opposition': 0.0, 'white_king_wrong_side': -1.0, 'can catch pawn': 0.0, 'white king ahead': 0.0, 'white_king_closer_to_winning_square': 0.0, 'white_king_ahead': 22.0, 'black_can_capture': 0.0, 'black_king_closer_closer_to_winning_square': 1.0, 'white_king_behind': 0.0, 'white_king_closer': 3.0, 'black_king_wrong_side': 0.0, 'white_king_blocked': 3.0, 'cant catch pawn': 6.0, 'black_king_closer': 3.0, 'h_pawn': 2.0}
-
-#4 iterations
-#{'black_opposition': 0.0, 'white_king_wrong_side': -1.0, 'can catch pawn': 0.0, 'white king ahead': -1.0, 'white_king_closer_to_winning_square': 0.0, 'white_king_ahead': 26.0, 'black_can_capture': 0.0, 'black_king_closer_closer_to_winning_square': 1.0, 'white_king_behind': 0.0, 'white_king_closer': 3.0, 'black_king_wrong_side': 0.0, 'white_king_blocked': 4.0, 'cant catch pawn': 6.0, 'black_king_closer': 3.0, 'h_pawn': 2.0}
-
-#5 iterations
-#0.1 stepsize
-#{'black_opposition': 0.40000000000000024, 'white_king_wrong_side': -0.2999999999999998, 'can catch pawn': 0.09999999999999987, 'white king ahead': -1.1000000000000003, 'white_king_closer_to_winning_square': 0.2000000000000002, 'white_king_ahead': 7.699999999999989, 'black_can_capture': 0.19999999999999998, 'black_king_closer_closer_to_winning_square': -0.19999999999999982, 'white_king_behind': -0.09999999999999976, 'white_king_closer': 1.6, 'black_king_wrong_side': 0.7999999999999997, 'white_king_blocked': 2.400000000000001, 'cant catch pawn': 2.500000000000001, 'black_king_closer': 0.9999999999999999, 'h_pawn': 1.942890293094024e-16}
-
-#4
-#{'black_opposition': -0.6999999999999997, 'black_king_closer': -0.19999999999999982, 'cant catch pawn': 1.0999999999999999, 'can catch pawn': 1.6, 'white_king_closer_to_winning_square': -1.3877787807814457e-16, 'black_can_capture': 1.0999999999999999, 'black_king_closer_closer_to_winning_square': -0.4999999999999998, 'white_king_behind': 2.498001805406602e-16, 'white_king_closer': 1.8000000000000003, 'black_king_wrong_side': 1.6, 'white_king_blocked': 4.999999999999999, 'white_king_wrong_side': -0.7999999999999997, 'white king ahead': -0.9999999999999999, 'h_pawn': -1.7000000000000002})
-def test(examples):
-    weights = {'black_king_closer_to_winning_square': -1.0300000000000007, 'black_opposition': -1.8900000000000015, 'cant catch pawn': 1.0000000000000007, 'can catch pawn': 0.7600000000000006, 'white_king_closer': 1.260000000000001, 'white_king_closer_to_winning_square': -0.7400000000000004, 'black_can_capture': 0.20000000000000004, 'white king ahead': 0.4900000000000002, 'black_king_wrong_side': 0.9400000000000006, 'white_king_blocked': 0.9400000000000007, 'white_king_wrong_side': -1.330000000000001, 'black_king_closer': -0.5000000000000002, 'h_pawn': -1.510000000000001}
-    syzygy = chess.syzygy.Tablebases()
-
-    num = 0
-    num += syzygy.open_directory(os.path.join(os.path.dirname(__file__), "four-men"))   
-
+def test(examples, color, weights, syzygy):
     total = 0
     correct = 0
     incorrect = 0
@@ -192,7 +168,7 @@ def test(examples):
         if isIllegal(t):
                 continue
 
-        board = chess.Board(t + " " + "w" + " - - 0 1")
+        board = chess.Board(t + " " + color + " - - 0 1")
         expectVal = syzygy.probe_wdl(board)
         features = extractWordFeatures(board)
 
@@ -234,7 +210,6 @@ def test(examples):
             print correct
             print total
             print " "
-        #     print total
 
     print correct
     print total

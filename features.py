@@ -86,13 +86,23 @@ def canDefend(board, n):
 # Might test by increasing the feature value for black can capture/
 def canBeCaptured_helper(board):
     
+
+
     # We know it's only one so far, so don't have to do anymore.
     move = board.turn == chess.WHITE
     
+
     # P is the position number of the pawn.
     P = getPiece(board,chess.PAWN, chess.WHITE)[0]
     black_attack = board.is_attacked_by(chess.BLACK, P)
     
+    # if P is in the 2nd rank, then return False.
+    
+    if P <= 15:
+        return False
+
+
+
     # just to reduce cases we need to check
     if not black_attack:
         return False
@@ -148,6 +158,9 @@ def isWhiteKingAhead(board):
         if abs(col_K - col_p) <= 1:
             A['white king ahead'] = 1
     
+#    elif row_K < row_p:
+
+
     return A
 
 def ishPawn(board):
@@ -191,9 +204,16 @@ def wrongSide(board):
     k = getPieceCoOrd(board, chess.KING, chess.BLACK) 
     P = getPieceCoOrd(board, chess.PAWN, chess.WHITE)
     
+    # K[1] is the column.
+    
+    # both on same side of the pawn:
     if K[1] > P[1] and k[1] > P[1]:
         
         # K[1] < k[1] means white king is closer.
+        
+
+
+
 
         if K[1] < k[1]:
             
@@ -206,7 +226,8 @@ def wrongSide(board):
             if abs(K[0] - k[0]) <= 1:
 
                 A['white_king_blocked'] = 1
-
+    
+   
     elif K[1] < P[1] and k[1] < P[1]:
         
         if K[1] < k[1]:
@@ -215,14 +236,27 @@ def wrongSide(board):
             
             if abs(K[0] - k[0]) <= 1:
 
-                A['white_king_blocked'] = 1
+                A['white_king_blocked_side'] = 1
                 
-        elif K[1] < k[1]:
+        elif K[1] > k[1]:
             
             A['black_king_wrong_side'] = 1
      
     ## time to check the rows:
+    # if black king is blocking the white king via
+    # rows:
     
+    if K[0] > P[0] and k[0] > P[0]:
+
+        # if black king is blocking the white king:
+
+        if abs(k[1] - P[1]) <= abs(K[1] - P[1]):
+
+            if k[0] < K[0]:
+
+                A['white_king_blocked_down'] = 1
+
+
 #    if K[0] < P[0] and k[0] > P[0]:
 #        A['white_king_behind'] = 1
 #    elif K[0] > P[0] and k[0] < P[0]:
