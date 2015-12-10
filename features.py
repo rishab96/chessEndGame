@@ -423,6 +423,10 @@ def canCatchPawn_helper(board):
         num = res2[0]
     
     row_p, col_p = getRowAndColumn(num)
+    
+    # so we deal with the pawn being on the 2nd rank.
+    if row_p == 1:
+        row_p += 1
 
     if row_k < row_p:
 

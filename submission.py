@@ -21,6 +21,44 @@ import json
 
 import features
 from features import *
+
+import features2P
+from features2P import *
+
+import featuresRook
+from featuresRook import *
+
+def extractFeatures_Rook(board):
+    
+    A = getRookFeatures(board)
+    print A
+
+
+
+def extractFeatures2(board):
+    
+    # do "w" or "b" thing here:
+
+#    board = chess.Board(FEN)
+
+    features = {}
+    features = defaultdict(lambda: 0.0, features)
+     
+#    feature_test(board)
+#    print board    
+    A = getFeatures2P(board)
+    print A
+    features.update(A)
+#    canCatchPawn(FEN)
+
+
+    return features
+
+
+
+
+
+
 def extractWordFeatures(x):
     """
     Chess Features
@@ -56,23 +94,134 @@ def isIllegal(FEN):
 
     return False
 
+def runIsolation(FEN, features):
+    
+    # make it white to play.
+    # complete FEN.
+    FEN = FEN + " " + "b" + " - - 0 1"
+    board = chess.Board(FEN)
+#    expectVal = syzygy.probe_wdl(board)
+    print(board)
+    print features(board)
+    
+#    print 'testing board changes: '
+#    print board
+
+
 def isolationTest(features):
     
-    FEN = '2k5/2P5/2K5/8/8/8/8/8'
+    print 'in isolation test'
+
+# for Kp endgames:
+    isolationTestP(features)
+
+#   rook endgames
+#    isolationTestR(features)
+
+def isolationTestR(features):
     
-    board = chess.Board(FEN + " " + "w" + " - - 0 1")
+   # FEN = 'r7/8/8/3k4/8/5P2/1K6/4R3'
+   # runIsolation(FEN, features)
+    
+    
+#    FEN = '5r2/8/8/3k4/8/5P2/5K2/4R3'
+#    runIsolation(FEN, features)
+
+#    FEN = 'r7/8/8/4k3/8/2P5/2K5/1R6'
+#    runIsolation(FEN, features)
+    
+    FEN = '6r1/8/7R/3k4/6P1/8/5K2/8'
+    runIsolation(FEN, features)
+
+
+def isolationTestP(features):
+
+#    FEN = '2k5/2P5/2K5/8/8/8/8/8'
+    
+#    board = chess.Board(FEN + " " + "w" + " - - 0 1")
 #    expectVal = syzygy.probe_wdl(board)
-    print(board)
-    print features(board)
+#    print(board)
+#    features(board)
+    
+#    print 'testing board changes: '
+#    print board
+
+
+#    FEN = '8/4k3/8/4K1p1/6P1/8/8/8'
     
 
-    FEN = '2k5/2P5/4K3/8/8/8/8/8'
-    
-    board = chess.Board(FEN + " " + "w" + " - - 0 1")
+#    FEN = FEN + " " + "w" + " - - 0 1"
+#    board = chess.Board(FEN)
 #    expectVal = syzygy.probe_wdl(board)
-    print(board)
-    print features(board)
+#    print(board)
+#    print features(FEN)
+    
+#    print 'testing board changes: '
+#    print board
+    
+    FEN = '8/3k1p2/5P2/3K4/8/8/8/8'
+    runIsolation(FEN, features)
 
+
+
+    # position 2
+    FEN = '8/7k/6p1/4K3/6P1/8/8/8'   
+    runIsolation(FEN, features)
+    # position 3:
+    
+    FEN = '4k3/5p2/5P2/3K4/8/8/8/8'   
+    runIsolation(FEN, features)
+    
+    # position 5:
+    FEN = '8/5p2/3K1P1k/8/8/8/8/8'      
+    runIsolation(FEN, features)
+    # position 6:
+
+    FEN = '8/5p1k/5P2/3K4/8/8/8/8' 
+    runIsolation(FEN, features)
+    # position 7:
+#    FEN = '4k3/8/8/5p2/2K2P2/8/8/8' 
+#    runIsolation(FEN, features)
+    # position 8:
+
+ #   FEN = '8/2k5/8/5p2/2K2P2/8/8/8' 
+ #   runIsolation(FEN, features)
+    # position 9: Winning
+#    FEN = '8/8/8/5K2/3p4/1k1P4/8/8'
+#    runIsolation(FEN, features)
+    
+    # These are adjacent pawn positions
+    # position 10: Draw
+#    FEN = '8/1k6/8/1K2p3/8/5P2/8/8'
+#    runIsolation(FEN, features)
+
+    # position 11: Draw
+#    FEN = '3k4/8/4p3/8/4K3/8/5P2/8'
+#    runIsolation(FEN, features)
+    
+    # position 12: Win (hard -- needs minimax?
+#    FEN = '8/1k6/8/K3p3/8/5P2/8/8'
+#    runIsolation(FEN, features)
+    #
+    # These are double passed pawn positions
+    # position 13: Win
+#    FEN = '8/3k4/8/7P/p3K3/8/8/8'
+#    runIsolation(FEN, features)
+
+    # position 14: Draw
+#    FEN = '8/3k4/8/7P/1p3K2/8/8/8'
+#    runIsolation(FEN, features)
+    # position 15: Win...after Queens made, loses it'
+#    FEN = '8/8/8/1k5P/1p3K2/8/8/8'
+#    runIsolation(FEN, features)
+    
+    # position 16: Draw...Q vs rook pawn:
+#    FEN = '8/8/8/p6P/5K2/8/8/1k6'
+#    runIsolation(FEN, features)
+
+    # position 17: Win (black pawn too slow)
+#    FEN = '8/8/p7/7P/5K2/8/8/1k6'
+#    runIsolation(FEN, features)
 
 ############################################################
 # Problem 3b: stochastic gradient descent
