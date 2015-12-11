@@ -22,8 +22,8 @@ import json
 import features
 from features import *
 
-import features2P
-from features2P import *
+# import features2P
+# from features2P import *
 
 import featuresRook
 from featuresRook import *
@@ -35,24 +35,24 @@ def extractFeatures_Rook(board):
 
 
 
-def extractFeatures2(board):
+# def extractFeatures2(board):
     
-    # do "w" or "b" thing here:
+#     # do "w" or "b" thing here:
 
-#    board = chess.Board(FEN)
+# #    board = chess.Board(FEN)
 
-    features = {}
-    features = defaultdict(lambda: 0.0, features)
+#     features = {}
+#     features = defaultdict(lambda: 0.0, features)
      
-#    feature_test(board)
-#    print board    
-    A = getFeatures2P(board)
-    print A
-    features.update(A)
-#    canCatchPawn(FEN)
+# #    feature_test(board)
+# #    print board    
+#     A = getFeatures2P(board)
+#     print A
+#     features.update(A)
+# #    canCatchPawn(FEN)
 
 
-    return features
+#     return features
 
 
 

@@ -20,11 +20,11 @@ def isolationTest():
 #    features = extractFeatures_Rook
     submission.isolationTest(features)
 
-#syzygy = chess.syzygy.Tablebases()
-#num = 0
-#num += syzygy.open_directory(os.path.join(os.path.dirname(__file__), "four-men"))
-#data = readExamples('data.txt')
+syzygy = chess.syzygy.Tablebases()
+num = 0
+num += syzygy.open_directory(os.path.join(os.path.dirname(__file__), "four-men"))
+data = readExamples('data.txt')
 
-isolationTest()
+#isolationTest()
 
-#test('w', data, data, syzygy)
+test('w', data, data, syzygy)
